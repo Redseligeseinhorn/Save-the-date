@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Postkarte</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── Pixel Sky ── */
+    .sky {
+      width: 100vw;
+      height: 100vh;
+      background: #5b9bd5;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image-rendering: pixelated;
+    }
+
+    /* Pixelated gradient strips */
+    .sky::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          transparent 0px, transparent 39px,
+          rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px
+        );
+      pointer-events: none;
+    }
+
+    /* ── Clouds (pure CSS pixel art) ── */
+    .cloud {
+      position: absolute;
+      image-rendering: pixelated;
+    }
+
+    /* Cloud made of box-shadows from a 16×16 pixel base */
+    .cloud-pixel {
+      width: 16px;
+      height: 16px;
+      position: relative;
+    }
+
+    /* Cloud 1 — big, top-left */
+    .c1 { top: 8%; left: 5%; animation: drift 28s linear infinite; }
+    .c1 .cloud-pixel {
+      box-shadow:
+        /* row 1 */
+        32px 0 0 #fff, 48px 0 0 #fff, 64px 0 0 #fff,
+        /* row 2 */
+        16px 16px 0 #fff, 32px 16px 0 #fff, 48px 16px 0 #fff, 64px 16px 0 #fff, 80px 16px 0 #fff, 96px 16px 0 #fff,
+        /* row 3 */
+        0 32px 0 #fff, 16px 32px 0 #fff, 32px 32px 0 #fff, 48px 32px 0 #fff, 64px 32px 0 #fff, 80px 32px 0 #fff, 96px 32px 0 #fff, 112px 32px 0 #fff,
+        /* row 4 */
+        0 48px 0 #fff, 16px 48px 0 #fff, 32px 48px 0 #fff, 48px 48px 0 #fff, 64px 48px 0 #fff, 80px 48px 0 #fff, 96px 48px 0 #fff, 112px 48px 0 #fff,
+        /* shadow strip */
+        0 64px 0 #c8dfef, 16px 64px 0 #c8dfef, 32px 64px 0 #c8dfef, 48px 64px 0 #c8dfef, 64px 64px 0 #c8dfef, 80px 64px 0 #c8dfef, 96px 64px 0 #c8dfef, 112px 64px 0 #c8dfef;
+    }
+
+    /* Cloud 2 — small, top-right */
+    .c2 { top: 14%; right: 8%; animation: drift 36s linear infinite; animation-delay: -12s; }
+    .c2 .cloud-pixel {
+      box-shadow:
+        16px 0 0 #fff, 32px 0 0 #fff,
+        0 16px 0 #fff, 16px 16px 0 #fff, 32px 16px 0 #fff, 48px 16px 0 #fff, 64px 16px 0 #fff,
+        0 32px 0 #fff, 16px 32px 0 #fff, 32px 32px 0 #fff, 48px 32px 0 #fff, 64px 32px 0 #fff,
+        0 48px 0 #c8dfef, 16px 48px 0 #c8dfef, 32px 48px 0 #c8dfef, 48px 48px 0 #c8dfef, 64px 48px 0 #c8dfef;
+    }
+
+    /* Cloud 3 — medium, bottom-left-ish */
+    .c3 { top: 55%; left: 2%; animation: drift 22s linear infinite; animation-delay: -7s; }
+    .c3 .cloud-pixel {
+      box-shadow:
+        16px 0 0 #fff, 32px 0 0 #fff, 48px 0 0 #fff,
+        0 16px 0 #fff, 16px 16px 0 #fff, 32px 16px 0 #fff, 48px 16px 0 #fff, 64px 16px 0 #fff, 80px 16px 0 #fff,
+        0 32px 0 #fff, 16px 32px 0 #fff, 32px 32px 0 #fff, 48px 32px 0 #fff, 64px 32px 0 #fff, 80px 32px 0 #fff,
+        0 48px 0 #c8dfef, 16px 48px 0 #c8dfef, 32px 48px 0 #c8dfef, 48px 48px 0 #c8dfef, 64px 48px 0 #c8dfef, 80px 48px 0 #c8dfef;
+    }
+
+    /* Cloud 4 — tiny, mid-right */
+    .c4 { top: 38%; right: 15%; animation: drift 42s linear infinite; animation-delay: -20s; }
+    .c4 .cloud-pixel {
+      box-shadow:
+        16px 0 0 #fff,
+        0 16px 0 #fff, 16px 16px 0 #fff, 32px 16px 0 #fff, 48px 16px 0 #fff,
+        0 32px 0 #fff, 16px 32px 0 #fff, 32px 32px 0 #fff, 48px 32px 0 #fff,
+        0 48px 0 #c8dfef, 16px 48px 0 #c8dfef, 32px 48px 0 #c8dfef, 48px 48px 0 #c8dfef;
+    }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to   { transform: translateX(110vw); }
+    }
+
+    /* ── Wind animation for the card ── */
+    @keyframes wehen {
+      0%   { transform: rotate(-3deg) translateY(0px)   translateX(0px); }
+      20%  { transform: rotate( 2deg) translateY(-8px)  translateX(4px); }
+      40%  { transform: rotate(-2deg) translateY(-14px) translateX(-3px); }
+      60%  { transform: rotate( 3deg) translateY(-6px)  translateX(5px); }
+      80%  { transform: rotate(-1deg) translateY(-10px) translateX(-2px); }
+      100% { transform: rotate(-3deg) translateY(0px)   translateX(0px); }
+    }
+
+    /* ── Card container (preserves 3-D) ── */
+    .card-scene {
+      width: 620px;
+      height: 420px;
+      perspective: 900px;
+      cursor: pointer;
+      animation: wehen 4s ease-in-out infinite;
+      filter: drop-shadow(4px 8px 12px rgba(0,0,0,0.35));
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .card-scene.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border: 3px solid #fff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* ── Front ── */
+    .card-front {
+      background: #e8dcc8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ── Back ── */
+    .card-back {
+      background: #fdf8ee;
+      transform: rotateY(180deg);
+      padding: 0;
+    }
+
+    .divider {
+      background: repeating-linear-gradient(
+        180deg,
+        #c9b99a 0px, #c9b99a 6px,
+        transparent 6px, transparent 10px
+      );
+      margin: 0 8px;
+    }
+
+    .back-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 8px;
+    }
+
+    .back-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+      flex: 1;
+    }
+
+    .back-line {
+      height: 1px;
+      background: #c9b99a;
+    }
+
+    .back-greeting {
+      font-size: 11px;
+      color: #8a7a60;
+      font-style: italic;
+    }
+
+    .back-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      padding-left: 8px;
+    }
+
+    /* ── Stamp ── */
+    .stamp {
+      width: 52px;
+      height: 62px;
+      border: 2px solid #b09070;
+      background: #f0e8d0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Perforation dots */
+    .stamp::before, .stamp::after {
+      content: '';
+      position: absolute;
+      background: repeating-linear-gradient(
+        90deg,
+        #fdf8ee 0px, #fdf8ee 3px,
+        transparent 3px, transparent 7px
+      );
+    }
+    .stamp::before {
+      top: -5px; left: 0; right: 0; height: 5px;
+    }
+    .stamp::after {
+      bottom: -5px; left: 0; right: 0; height: 5px;
+    }
+
+    .stamp-inner {
+      width: 40px;
+      height: 50px;
+      background: linear-gradient(135deg, #7ec8e3 0%, #5b9bd5 100%);
+      border: 1px solid #4a89c0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #1a4a70;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .address-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .address-line {
+      height: 1px;
+      background: #c9b99a;
+    }
+
+    .address-label {
+      font-size: 8px;
+      color: #c9b99a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Hint ── */
+    .hint {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 1px;
+      pointer-events: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function Cloud({ cls }) {
+      return (
+        <div className={`cloud ${cls}`}>
+          <div className="cloud-pixel" />
+        </div>
+      );
+    }
+
+    function App() {
+      const [flipped, setFlipped] = useState(false);
+
+      return (
+        <div className="sky">
+          <Cloud cls="c1" />
+          <Cloud cls="c2" />
+          <Cloud cls="c3" />
+          <Cloud cls="c4" />
+
+          <div
+            className={`card-scene ${flipped ? 'flipped' : ''}`}
+            onClick={() => setFlipped(f => !f)}
+            title="Klicken zum Umdrehen"
+          >
+            <div className="card-inner">
+
+              {/* FRONT */}
+              <div className="card-face card-front">
+                <img className="card-img" src="Assets/Vorderseite.png" alt="Vorderseite" />
+              </div>
+
+              {/* BACK */}
+              <div className="card-face card-back">
+                <img className="card-img" src="Assets/R%C3%BCckseite.png" alt="Rückseite" />
+              </div>
+
+            </div>
+          </div>
+
+          <div className="hint">▸ Klicken zum Umdrehen</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
