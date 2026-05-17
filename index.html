@@ -117,8 +117,8 @@
 
     /* ── Card container (preserves 3-D) ── */
     .card-scene {
-      width: 620px;
-      height: 420px;
+      width: min(92vw, 620px);
+      aspect-ratio: 620 / 420;
       perspective: 900px;
       cursor: pointer;
       animation: wehen 4s ease-in-out infinite;
